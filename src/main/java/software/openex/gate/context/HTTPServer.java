@@ -7,8 +7,7 @@ import io.vertx.ext.healthchecks.HealthCheckHandler;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.*;
 import org.slf4j.Logger;
-import software.openex.gate.handlers.LiveNessHandler;
-import software.openex.gate.handlers.RequestLoggingFormatter;
+import software.openex.gate.handlers.*;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -18,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import static io.netty.handler.codec.http.HttpResponseStatus.GATEWAY_TIMEOUT;
 import static io.vertx.core.http.HttpMethod.*;
 import static io.vertx.ext.web.Router.router;
+import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static software.openex.gate.context.AppContext.context;
@@ -68,6 +68,12 @@ public final class HTTPServer implements Closeable {
 
     private void setupRoutes() {
         setupBaseHandlers();
+
+        var bodyHandler = BodyHandler.create(FALSE);
+        var jsonBodyResponderHandler = new JsonBodyResponderHandler();
+        var noContentResponderHandler = new NoContentResponderHandler();
+
+        router.post("/v1/messages").handler(bodyHandler).handler(new SubmitMessageHandler()).handler(jsonBodyResponderHandler);
 
         router.get("/v1/ready").handler(new LiveNessHandler());
         router.get("/health*").handler(healthChecksHandler());

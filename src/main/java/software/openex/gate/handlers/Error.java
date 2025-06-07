@@ -11,6 +11,9 @@ import io.vertx.ext.web.RoutingContext;
  * @author Alireza Pourtaghi
  */
 public enum Error {
+    // Validation
+    ID_NOT_VALID("id.not_valid", "", HttpResponseStatus.BAD_REQUEST.code()),
+
     // General
     HANDLER_NOT_FOUND("handler.not_found", "", HttpResponseStatus.NOT_FOUND.code()),
     REQUEST_BODY_NOT_VALID("request_body.not_valid", "", HttpResponseStatus.BAD_REQUEST.code()),
