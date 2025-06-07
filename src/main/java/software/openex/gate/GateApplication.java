@@ -1,13 +1,17 @@
 package software.openex.gate;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@SpringBootApplication
-public class GateApplication {
+/**
+ * Main application class to be executed.
+ *
+ * @author Alireza Pourtaghi
+ */
+public final class GateApplication {
+    private static final Logger logger = LoggerFactory.getLogger(GateApplication.class);
 
-	public static void main(String[] args) {
-		SpringApplication.run(GateApplication.class, args);
-	}
-
+    public static void main(final String... args) {
+        logger.info("Starting gate ...");
+    }
 }
