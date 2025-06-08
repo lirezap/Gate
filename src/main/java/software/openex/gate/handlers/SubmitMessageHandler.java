@@ -1,8 +1,20 @@
 package software.openex.gate.handlers;
 
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
+import software.openex.gate.binary.base.ErrorMessage;
+import software.openex.gate.binary.order.BuyLimitOrder;
+import software.openex.gate.binary.order.LimitOrderBinaryRepresentation;
 
+import java.lang.foreign.MemorySegment;
+import java.util.concurrent.TimeoutException;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.PRECONDITION_FAILED;
+import static io.vertx.core.json.JsonObject.mapFrom;
 import static java.lang.Integer.parseInt;
+import static java.lang.foreign.Arena.ofConfined;
+import static software.openex.gate.binary.BinaryRepresentable.id;
+import static software.openex.gate.context.AppContext.context;
 import static software.openex.gate.handlers.Error.*;
 
 /**
@@ -16,7 +28,7 @@ public final class SubmitMessageHandler extends HTTPHandler {
             var id = parseInt(routingContext.request().getParam("id"));
 
             switch (id) {
-                case 101 -> HANDLER_NOT_FOUND.send(routingContext);
+                case 101 -> submitBuyLimitOrder(routingContext);
                 case 102 -> HANDLER_NOT_FOUND.send(routingContext);
                 case 104 -> HANDLER_NOT_FOUND.send(routingContext);
                 case 105 -> HANDLER_NOT_FOUND.send(routingContext);
@@ -38,5 +50,43 @@ public final class SubmitMessageHandler extends HTTPHandler {
             logger.error("{}", ex.getMessage());
             SERVER_ERROR.send(routingContext);
         }
+    }
+
+    private void submitBuyLimitOrder(final RoutingContext routingContext) {
+        context().executors().worker().submit(() -> {
+            var body = routingContext.body().asJsonObject();
+            var buyLimitOrder = new BuyLimitOrder(
+                    body.getLong("id"),
+                    body.getLong("ts"),
+                    body.getString("symbol"),
+                    body.getString("quantity"),
+                    body.getString("price"));
+
+            try (var arena = ofConfined()) {
+                var message = new LimitOrderBinaryRepresentation(arena, buyLimitOrder);
+                message.encodeV1();
+
+                var result = context().oms().send(arena, message.segment());
+                if (id(result) == -1) {
+                    error(routingContext, result);
+                } else {
+                    routingContext.put(RESPONSE_BODY, BuyLimitOrder.decode(result));
+                    routingContext.next();
+                }
+            } catch (TimeoutException ex) {
+                OMS_REQUEST_TIMEOUT.send(routingContext);
+            } catch (Exception ex) {
+                logger.error("{}", ex.getMessage(), ex);
+                SERVER_ERROR.send(routingContext);
+            }
+        });
+    }
+
+    private void error(final RoutingContext routingContext, final MemorySegment result) {
+        var errorMessage = ErrorMessage.decode(result);
+        routingContext.response()
+                .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                .setStatusCode(PRECONDITION_FAILED.code())
+                .end(mapFrom(errorMessage).toBuffer());
     }
 }

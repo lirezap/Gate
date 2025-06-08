@@ -14,6 +14,9 @@ public enum Error {
     // Validation
     ID_NOT_VALID("id.not_valid", "", HttpResponseStatus.BAD_REQUEST.code()),
 
+    // OMS
+    OMS_REQUEST_TIMEOUT("oms.request_timeout", "OMS server request timeout", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
+
     // General
     HANDLER_NOT_FOUND("handler.not_found", "", HttpResponseStatus.NOT_FOUND.code()),
     REQUEST_BODY_NOT_VALID("request_body.not_valid", "", HttpResponseStatus.BAD_REQUEST.code()),
