@@ -169,7 +169,7 @@ public final class SubmitMessageHandler extends HTTPHandler {
 
                 final var result = submit(routingContext, arena, message.segment());
                 if (result.isPresent()) {
-                    routingContext.put(RESPONSE_BODY, new JsonObject());
+                    routingContext.put(RESPONSE_BODY, BuyMarketOrder.decode(result.get()));
                     routingContext.next();
                 }
             }
@@ -191,7 +191,7 @@ public final class SubmitMessageHandler extends HTTPHandler {
 
                 final var result = submit(routingContext, arena, message.segment());
                 if (result.isPresent()) {
-                    routingContext.put(RESPONSE_BODY, new JsonObject());
+                    routingContext.put(RESPONSE_BODY, SellMarketOrder.decode(result.get()));
                     routingContext.next();
                 }
             }
@@ -214,7 +214,7 @@ public final class SubmitMessageHandler extends HTTPHandler {
 
                 final var result = submit(routingContext, arena, message.segment());
                 if (result.isPresent()) {
-                    routingContext.put(RESPONSE_BODY, new JsonObject());
+                    routingContext.put(RESPONSE_BODY, IOCBuyLimitOrder.decode(result.get()));
                     routingContext.next();
                 }
             }
@@ -237,7 +237,53 @@ public final class SubmitMessageHandler extends HTTPHandler {
 
                 final var result = submit(routingContext, arena, message.segment());
                 if (result.isPresent()) {
-                    routingContext.put(RESPONSE_BODY, new JsonObject());
+                    routingContext.put(RESPONSE_BODY, IOCSellLimitOrder.decode(result.get()));
+                    routingContext.next();
+                }
+            }
+        });
+    }
+
+    private void submitFOKBuyLimitOrder(final RoutingContext routingContext) {
+        context().executors().worker().submit(() -> {
+            final var body = routingContext.body().asJsonObject();
+            final var fokBuyLimitOrder = new FOKBuyLimitOrder(
+                    body.getLong("id"),
+                    body.getLong("ts"),
+                    body.getString("symbol"),
+                    body.getString("quantity"),
+                    body.getString("price"));
+
+            try (final var arena = ofConfined()) {
+                final var message = new LimitOrderBinaryRepresentation(arena, fokBuyLimitOrder);
+                message.encodeV1();
+
+                final var result = submit(routingContext, arena, message.segment());
+                if (result.isPresent()) {
+                    routingContext.put(RESPONSE_BODY, FOKBuyLimitOrder.decode(result.get()));
+                    routingContext.next();
+                }
+            }
+        });
+    }
+
+    private void submitFOKSellLimitOrder(final RoutingContext routingContext) {
+        context().executors().worker().submit(() -> {
+            final var body = routingContext.body().asJsonObject();
+            final var fokSellLimitOrder = new FOKSellLimitOrder(
+                    body.getLong("id"),
+                    body.getLong("ts"),
+                    body.getString("symbol"),
+                    body.getString("quantity"),
+                    body.getString("price"));
+
+            try (final var arena = ofConfined()) {
+                final var message = new LimitOrderBinaryRepresentation(arena, fokSellLimitOrder);
+                message.encodeV1();
+
+                final var result = submit(routingContext, arena, message.segment());
+                if (result.isPresent()) {
+                    routingContext.put(RESPONSE_BODY, FOKSellLimitOrder.decode(result.get()));
                     routingContext.next();
                 }
             }
