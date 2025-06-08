@@ -40,7 +40,11 @@ public final class OMSConnectionPool implements Closeable {
         this.connections = new ArrayBlockingQueue<>(configuration.loadInt("oms.connections_count"));
 
         for (int i = 1; i <= configuration.loadInt("oms.connections_count"); i++) {
-            connections.offer(newConnection());
+            try {
+                connections.offer(newConnection());
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
@@ -88,19 +92,15 @@ public final class OMSConnectionPool implements Closeable {
         }
     }
 
-    private Socket newConnection() {
-        try {
-            // TODO: Check available options.
-            final var socket = new Socket();
-            socket.setReuseAddress(TRUE);
-            socket.setKeepAlive(TRUE);
-            socket.setSoTimeout(requestTimeout);
-            socket.connect(address, connectTimeout);
+    private Socket newConnection() throws Exception {
+        // TODO: Check available options.
+        final var socket = new Socket();
+        socket.setReuseAddress(TRUE);
+        socket.setKeepAlive(TRUE);
+        socket.setSoTimeout(requestTimeout);
+        socket.connect(address, connectTimeout);
 
-            return socket;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        return socket;
     }
 
     @Override
