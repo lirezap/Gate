@@ -15,7 +15,9 @@ public enum Error {
     ID_NOT_VALID("id.not_valid", "", HttpResponseStatus.BAD_REQUEST.code()),
 
     // OMS
+    OMS_CONNECT_TIMEOUT("oms.connect_timeout", "OMS server connect timeout", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
     OMS_REQUEST_TIMEOUT("oms.request_timeout", "OMS server request timeout", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
+    OMS_NOT_REACHABLE("oms.not_reachable", "OMS server not reachable", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
 
     // General
     HANDLER_NOT_FOUND("handler.not_found", "", HttpResponseStatus.NOT_FOUND.code()),

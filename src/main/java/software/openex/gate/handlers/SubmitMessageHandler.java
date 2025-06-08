@@ -5,8 +5,13 @@ import io.vertx.ext.web.RoutingContext;
 import software.openex.gate.binary.base.ErrorMessage;
 import software.openex.gate.binary.order.BuyLimitOrder;
 import software.openex.gate.binary.order.LimitOrderBinaryRepresentation;
+import software.openex.gate.exceptions.ConnectionClosedException;
 
+import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.PRECONDITION_FAILED;
@@ -66,20 +71,35 @@ public final class SubmitMessageHandler extends HTTPHandler {
                 final var message = new LimitOrderBinaryRepresentation(arena, buyLimitOrder);
                 message.encodeV1();
 
-                final var result = context().oms().send(arena, message.segment());
-                if (id(result) == -1) {
-                    error(routingContext, result);
-                } else {
-                    routingContext.put(RESPONSE_BODY, BuyLimitOrder.decode(result));
+                final var result = submit(routingContext, arena, message.segment());
+                if (result.isPresent()) {
+                    routingContext.put(RESPONSE_BODY, BuyLimitOrder.decode(result.get()));
                     routingContext.next();
                 }
-            } catch (TimeoutException ex) {
-                OMS_REQUEST_TIMEOUT.send(routingContext);
-            } catch (Exception ex) {
-                logger.error("{}", ex.getMessage(), ex);
-                SERVER_ERROR.send(routingContext);
             }
         });
+    }
+
+    private Optional<MemorySegment> submit(final RoutingContext routingContext, final Arena arena, final MemorySegment message) {
+        try {
+            final var result = context().oms().send(arena, message);
+            if (id(result) == -1) {
+                error(routingContext, result);
+            } else {
+                return Optional.of(result);
+            }
+        } catch (TimeoutException ex) {
+            OMS_CONNECT_TIMEOUT.send(routingContext);
+        } catch (SocketTimeoutException ex) {
+            OMS_REQUEST_TIMEOUT.send(routingContext);
+        } catch (ConnectException | ConnectionClosedException ex) {
+            OMS_NOT_REACHABLE.send(routingContext);
+        } catch (Exception ex) {
+            logger.error("{}", ex.getMessage());
+            SERVER_ERROR.send(routingContext);
+        }
+
+        return Optional.empty();
     }
 
     private void error(final RoutingContext routingContext, final MemorySegment result) {
