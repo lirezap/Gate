@@ -40,10 +40,10 @@ public final class SubmitMessageHandler extends HTTPHandler {
                 case 102 -> submitSellLimitOrder(routingContext);
                 case 104 -> submitCancelOrder(routingContext);
                 case 105 -> submitFetchOrderBook(routingContext);
-                case 107 -> HANDLER_NOT_FOUND.send(routingContext);
-                case 108 -> HANDLER_NOT_FOUND.send(routingContext);
-                case 109 -> HANDLER_NOT_FOUND.send(routingContext);
-                case 110 -> HANDLER_NOT_FOUND.send(routingContext);
+                case 107 -> submitBuyMarketOrder(routingContext);
+                case 108 -> submitSellMarketOrder(routingContext);
+                case 109 -> submitIOCBuyLimitOrder(routingContext);
+                case 110 -> submitIOCSellLimitOrder(routingContext);
                 case 111 -> HANDLER_NOT_FOUND.send(routingContext);
                 case 112 -> HANDLER_NOT_FOUND.send(routingContext);
                 case 113 -> HANDLER_NOT_FOUND.send(routingContext);
@@ -148,6 +148,96 @@ public final class SubmitMessageHandler extends HTTPHandler {
                             .put("asks", asks);
 
                     routingContext.put(RESPONSE_BODY, response);
+                    routingContext.next();
+                }
+            }
+        });
+    }
+
+    private void submitBuyMarketOrder(final RoutingContext routingContext) {
+        context().executors().worker().submit(() -> {
+            final var body = routingContext.body().asJsonObject();
+            final var buyMarketOrder = new BuyMarketOrder(
+                    body.getLong("id"),
+                    body.getLong("ts"),
+                    body.getString("symbol"),
+                    body.getString("quantity"));
+
+            try (final var arena = ofConfined()) {
+                final var message = new OrderBinaryRepresentation(arena, buyMarketOrder);
+                message.encodeV1();
+
+                final var result = submit(routingContext, arena, message.segment());
+                if (result.isPresent()) {
+                    routingContext.put(RESPONSE_BODY, new JsonObject());
+                    routingContext.next();
+                }
+            }
+        });
+    }
+
+    private void submitSellMarketOrder(final RoutingContext routingContext) {
+        context().executors().worker().submit(() -> {
+            final var body = routingContext.body().asJsonObject();
+            final var sellMarketOrder = new SellMarketOrder(
+                    body.getLong("id"),
+                    body.getLong("ts"),
+                    body.getString("symbol"),
+                    body.getString("quantity"));
+
+            try (final var arena = ofConfined()) {
+                final var message = new OrderBinaryRepresentation(arena, sellMarketOrder);
+                message.encodeV1();
+
+                final var result = submit(routingContext, arena, message.segment());
+                if (result.isPresent()) {
+                    routingContext.put(RESPONSE_BODY, new JsonObject());
+                    routingContext.next();
+                }
+            }
+        });
+    }
+
+    private void submitIOCBuyLimitOrder(final RoutingContext routingContext) {
+        context().executors().worker().submit(() -> {
+            final var body = routingContext.body().asJsonObject();
+            final var iocBuyLimitOrder = new IOCBuyLimitOrder(
+                    body.getLong("id"),
+                    body.getLong("ts"),
+                    body.getString("symbol"),
+                    body.getString("quantity"),
+                    body.getString("price"));
+
+            try (final var arena = ofConfined()) {
+                final var message = new LimitOrderBinaryRepresentation(arena, iocBuyLimitOrder);
+                message.encodeV1();
+
+                final var result = submit(routingContext, arena, message.segment());
+                if (result.isPresent()) {
+                    routingContext.put(RESPONSE_BODY, new JsonObject());
+                    routingContext.next();
+                }
+            }
+        });
+    }
+
+    private void submitIOCSellLimitOrder(final RoutingContext routingContext) {
+        context().executors().worker().submit(() -> {
+            final var body = routingContext.body().asJsonObject();
+            final var iocSellLimitOrder = new IOCSellLimitOrder(
+                    body.getLong("id"),
+                    body.getLong("ts"),
+                    body.getString("symbol"),
+                    body.getString("quantity"),
+                    body.getString("price"));
+
+            try (final var arena = ofConfined()) {
+                final var message = new LimitOrderBinaryRepresentation(arena, iocSellLimitOrder);
+                message.encodeV1();
+
+                final var result = submit(routingContext, arena, message.segment());
+                if (result.isPresent()) {
+                    routingContext.put(RESPONSE_BODY, new JsonObject());
                     routingContext.next();
                 }
             }
