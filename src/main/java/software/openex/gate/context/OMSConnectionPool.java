@@ -9,6 +9,7 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeoutException;
 
@@ -50,41 +51,38 @@ public final class OMSConnectionPool implements Closeable {
         }
 
         try {
-            // TODO: Handle connection reset scenarios.
-            if (connection.isClosed()) {
-                // If current connection closed, we should replace it with a new connection.
+            if (!connection.isConnected()) {
+                connection.close();
                 connection = newConnection();
             }
 
             final var outputStream = connection.getOutputStream();
+            final var inputStream = connection.getInputStream();
+
             outputStream.write(message.toArray(JAVA_BYTE));
             outputStream.flush();
 
-            final var inputStream = connection.getInputStream();
-
             final var headerBytes = inputStream.readNBytes(RHS);
-            if (headerBytes.length == 0) {
-                connection.close();
-                throw new ConnectionClosedException();
-            }
+            if (headerBytes.length == 0) throw new ConnectionClosedException();
             final var header = arena.allocate(RHS);
             copy(headerBytes, 0, header, BYTE, 0, RHS);
 
-            final var size = size(header);
-
-            final var bodyBytes = inputStream.readNBytes(size);
-            if (bodyBytes.length == 0) {
-                connection.close();
-                throw new ConnectionClosedException();
-            }
-            final var body = arena.allocate(size);
-            copy(bodyBytes, 0, body, BYTE, 0, size);
+            final var bodySize = size(header);
+            final var bodyBytes = inputStream.readNBytes(bodySize);
+            if (bodyBytes.length == 0) throw new ConnectionClosedException();
+            final var body = arena.allocate(bodySize);
+            copy(bodyBytes, 0, body, BYTE, 0, bodySize);
 
             final var response = arena.allocate(header.byteSize() + body.byteSize());
             copy(header, 0, response, 0, header.byteSize());
             copy(body, 0, response, header.byteSize(), body.byteSize());
 
             return response;
+        } catch (SocketException ex) {
+            connection.close();
+            connection = newConnection();
+
+            throw ex;
         } finally {
             connections.offer(connection);
         }

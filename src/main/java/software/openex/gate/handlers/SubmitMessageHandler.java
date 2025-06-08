@@ -9,7 +9,7 @@ import software.openex.gate.exceptions.ConnectionClosedException;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.net.ConnectException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
@@ -92,7 +92,7 @@ public final class SubmitMessageHandler extends HTTPHandler {
             OMS_CONNECT_TIMEOUT.send(routingContext);
         } catch (SocketTimeoutException ex) {
             OMS_REQUEST_TIMEOUT.send(routingContext);
-        } catch (ConnectException | ConnectionClosedException ex) {
+        } catch (ConnectionClosedException | SocketException ex) {
             OMS_NOT_REACHABLE.send(routingContext);
         } catch (Exception ex) {
             logger.error("{}", ex.getMessage());
