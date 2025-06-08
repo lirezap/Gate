@@ -27,6 +27,7 @@ public final class AppContext implements Closeable {
     private static AppContext context;
 
     private final Configuration configuration;
+    private final OMSConnectionPool omsConnectionPool;
     private final Vertx vertx;
     private final HTTPServer httpServer;
 
@@ -34,6 +35,7 @@ public final class AppContext implements Closeable {
         addShutdownHook();
 
         this.configuration = new Configuration();
+        this.omsConnectionPool = new OMSConnectionPool(this.configuration);
         this.vertx = Vertx.vertx(vertxOptions(this.configuration));
         this.httpServer = new HTTPServer(this.configuration, this.vertx);
     }
@@ -76,6 +78,10 @@ public final class AppContext implements Closeable {
         return configuration;
     }
 
+    public OMSConnectionPool oms() {
+        return omsConnectionPool;
+    }
+
     public Vertx vertx() {
         return vertx;
     }
@@ -116,6 +122,7 @@ public final class AppContext implements Closeable {
     public void close() {
         try {
             if (httpServer != null) httpServer.close();
+            if (omsConnectionPool != null) omsConnectionPool.close();
         } catch (Exception ex) {
             logger.error("{}", ex.getMessage());
         }
