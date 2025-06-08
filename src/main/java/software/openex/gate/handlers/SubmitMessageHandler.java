@@ -44,10 +44,10 @@ public final class SubmitMessageHandler extends HTTPHandler {
                 case 108 -> submitSellMarketOrder(routingContext);
                 case 109 -> submitIOCBuyLimitOrder(routingContext);
                 case 110 -> submitIOCSellLimitOrder(routingContext);
-                case 111 -> HANDLER_NOT_FOUND.send(routingContext);
-                case 112 -> HANDLER_NOT_FOUND.send(routingContext);
-                case 113 -> HANDLER_NOT_FOUND.send(routingContext);
-                case 114 -> HANDLER_NOT_FOUND.send(routingContext);
+                case 111 -> submitFOKBuyLimitOrder(routingContext);
+                case 112 -> submitFOKSellLimitOrder(routingContext);
+                case 113 -> submitFOKBuyMarketOrder(routingContext);
+                case 114 -> submitFOKSellMarketOrder(routingContext);
 
                 default -> HANDLER_NOT_FOUND.send(routingContext);
             }
@@ -284,6 +284,50 @@ public final class SubmitMessageHandler extends HTTPHandler {
                 final var result = submit(routingContext, arena, message.segment());
                 if (result.isPresent()) {
                     routingContext.put(RESPONSE_BODY, FOKSellLimitOrder.decode(result.get()));
+                    routingContext.next();
+                }
+            }
+        });
+    }
+
+    private void submitFOKBuyMarketOrder(final RoutingContext routingContext) {
+        context().executors().worker().submit(() -> {
+            final var body = routingContext.body().asJsonObject();
+            final var fokBuyMarketOrder = new FOKBuyMarketOrder(
+                    body.getLong("id"),
+                    body.getLong("ts"),
+                    body.getString("symbol"),
+                    body.getString("quantity"));
+
+            try (final var arena = ofConfined()) {
+                final var message = new OrderBinaryRepresentation(arena, fokBuyMarketOrder);
+                message.encodeV1();
+
+                final var result = submit(routingContext, arena, message.segment());
+                if (result.isPresent()) {
+                    routingContext.put(RESPONSE_BODY, FOKBuyMarketOrder.decode(result.get()));
+                    routingContext.next();
+                }
+            }
+        });
+    }
+
+    private void submitFOKSellMarketOrder(final RoutingContext routingContext) {
+        context().executors().worker().submit(() -> {
+            final var body = routingContext.body().asJsonObject();
+            final var fokSellMarketOrder = new FOKSellMarketOrder(
+                    body.getLong("id"),
+                    body.getLong("ts"),
+                    body.getString("symbol"),
+                    body.getString("quantity"));
+
+            try (final var arena = ofConfined()) {
+                final var message = new OrderBinaryRepresentation(arena, fokSellMarketOrder);
+                message.encodeV1();
+
+                final var result = submit(routingContext, arena, message.segment());
+                if (result.isPresent()) {
+                    routingContext.put(RESPONSE_BODY, FOKSellMarketOrder.decode(result.get()));
                     routingContext.next();
                 }
             }
