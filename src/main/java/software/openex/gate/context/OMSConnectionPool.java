@@ -91,6 +91,8 @@ public final class OMSConnectionPool implements Closeable {
 
     @Override
     public void close() throws IOException {
+        logger.info("Closing OMS connections ...");
+
         for (var connection : connections) {
             connection.close();
         }
