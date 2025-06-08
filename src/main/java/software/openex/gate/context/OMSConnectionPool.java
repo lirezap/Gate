@@ -51,23 +51,23 @@ public final class OMSConnectionPool implements Closeable {
                 connection = newConnection();
             }
 
-            var outputStream = connection.getOutputStream();
+            final var outputStream = connection.getOutputStream();
             outputStream.write(message.toArray(JAVA_BYTE));
             outputStream.flush();
 
-            var inputStream = connection.getInputStream();
+            final var inputStream = connection.getInputStream();
 
-            var bytes = inputStream.readNBytes(RHS);
-            var header = arena.allocate(RHS);
-            copy(bytes, 0, header, BYTE, 0, RHS);
+            final var headerBytes = inputStream.readNBytes(RHS);
+            final var header = arena.allocate(RHS);
+            copy(headerBytes, 0, header, BYTE, 0, RHS);
 
-            var size = size(header);
+            final var size = size(header);
 
-            bytes = inputStream.readNBytes(size);
-            var body = arena.allocate(size);
-            copy(bytes, 0, body, BYTE, 0, size);
+            final var bodyBytes = inputStream.readNBytes(size);
+            final var body = arena.allocate(size);
+            copy(bodyBytes, 0, body, BYTE, 0, size);
 
-            var response = arena.allocate(header.byteSize() + body.byteSize());
+            final var response = arena.allocate(header.byteSize() + body.byteSize());
             copy(header, 0, response, 0, header.byteSize());
             copy(body, 0, response, header.byteSize(), body.byteSize());
 
@@ -80,7 +80,7 @@ public final class OMSConnectionPool implements Closeable {
     private Socket newConnection() {
         try {
             // TODO: Check available options.
-            var socket = new Socket();
+            final var socket = new Socket();
             socket.connect(address, connectTimeout);
 
             return socket;
@@ -93,7 +93,7 @@ public final class OMSConnectionPool implements Closeable {
     public void close() throws IOException {
         logger.info("Closing OMS connections ...");
 
-        for (var connection : connections) {
+        for (final var connection : connections) {
             connection.close();
         }
     }

@@ -25,7 +25,7 @@ public final class SubmitMessageHandler extends HTTPHandler {
     @Override
     public void handle(final RoutingContext routingContext) {
         try {
-            var id = parseInt(routingContext.request().getParam("id"));
+            final var id = parseInt(routingContext.request().getParam("id"));
 
             switch (id) {
                 case 101 -> submitBuyLimitOrder(routingContext);
@@ -54,19 +54,19 @@ public final class SubmitMessageHandler extends HTTPHandler {
 
     private void submitBuyLimitOrder(final RoutingContext routingContext) {
         context().executors().worker().submit(() -> {
-            var body = routingContext.body().asJsonObject();
-            var buyLimitOrder = new BuyLimitOrder(
+            final var body = routingContext.body().asJsonObject();
+            final var buyLimitOrder = new BuyLimitOrder(
                     body.getLong("id"),
                     body.getLong("ts"),
                     body.getString("symbol"),
                     body.getString("quantity"),
                     body.getString("price"));
 
-            try (var arena = ofConfined()) {
-                var message = new LimitOrderBinaryRepresentation(arena, buyLimitOrder);
+            try (final var arena = ofConfined()) {
+                final var message = new LimitOrderBinaryRepresentation(arena, buyLimitOrder);
                 message.encodeV1();
 
-                var result = context().oms().send(arena, message.segment());
+                final var result = context().oms().send(arena, message.segment());
                 if (id(result) == -1) {
                     error(routingContext, result);
                 } else {
@@ -83,7 +83,7 @@ public final class SubmitMessageHandler extends HTTPHandler {
     }
 
     private void error(final RoutingContext routingContext, final MemorySegment result) {
-        var errorMessage = ErrorMessage.decode(result);
+        final var errorMessage = ErrorMessage.decode(result);
         routingContext.response()
                 .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                 .setStatusCode(PRECONDITION_FAILED.code())

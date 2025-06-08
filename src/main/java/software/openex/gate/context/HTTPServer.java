@@ -37,7 +37,7 @@ public final class HTTPServer implements Closeable {
     HTTPServer(final Configuration configuration, final Vertx vertx) {
         this.vertx = vertx;
 
-        var options = new HttpServerOptions()
+        final var options = new HttpServerOptions()
                 .setHost(configuration.loadString("http.server.host"))
                 .setPort(configuration.loadInt("http.server.port"))
                 .setIdleTimeout((int) configuration.loadDuration("http.server.idle_timeout").toSeconds()).setIdleTimeoutUnit(TimeUnit.SECONDS)
@@ -55,7 +55,7 @@ public final class HTTPServer implements Closeable {
     public void start() {
         setupRoutes();
 
-        var cause = httpServer.requestHandler(router).listen().cause();
+        final var cause = httpServer.requestHandler(router).listen().cause();
         if (cause != null) {
             throw new RuntimeException(cause.getMessage());
         }
@@ -69,9 +69,9 @@ public final class HTTPServer implements Closeable {
     private void setupRoutes() {
         setupBaseHandlers();
 
-        var bodyHandler = BodyHandler.create(FALSE);
-        var jsonBodyResponderHandler = new JsonBodyResponderHandler();
-        var noContentResponderHandler = new NoContentResponderHandler();
+        final var bodyHandler = BodyHandler.create(FALSE);
+        final var jsonBodyResponderHandler = new JsonBodyResponderHandler();
+        final var noContentResponderHandler = new NoContentResponderHandler();
 
         router.post("/v1/messages").handler(bodyHandler).handler(new SubmitMessageHandler()).handler(jsonBodyResponderHandler);
 
@@ -114,7 +114,7 @@ public final class HTTPServer implements Closeable {
     public void close() throws IOException {
         logger.info("Closing HTTP server ...");
 
-        var cause = vertx.close().cause();
+        final var cause = vertx.close().cause();
         if (cause != null) {
             logger.error("{}", cause.getMessage());
         }

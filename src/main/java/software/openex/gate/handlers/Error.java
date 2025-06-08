@@ -66,7 +66,7 @@ public enum Error {
      * @return json representation of current instance
      */
     private JsonObject toJson() {
-        var json = new JsonObject();
+        final var json = new JsonObject();
         json.put("code", code);
         json.put("message", message);
 
