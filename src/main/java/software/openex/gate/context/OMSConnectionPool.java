@@ -4,12 +4,18 @@ import org.slf4j.Logger;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeoutException;
 
+import static java.lang.foreign.MemorySegment.copy;
+import static java.lang.foreign.ValueLayout.JAVA_BYTE;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.slf4j.LoggerFactory.getLogger;
+import static software.openex.gate.binary.BinaryRepresentable.*;
 
 /**
  * OMS TCP connections pool.
@@ -33,8 +39,42 @@ public final class OMSConnectionPool implements Closeable {
         }
     }
 
-    public void send(final MemorySegment segment) throws Exception {
-        // TODO: Complete implementation.
+    public MemorySegment send(final Arena arena, final MemorySegment message) throws Exception {
+        var connection = connections.poll(connectTimeout, MILLISECONDS);
+        if (connection == null) {
+            throw new TimeoutException();
+        }
+
+        try {
+            if (connection.isClosed()) {
+                // If current connection closed, we should replace it with a new connection.
+                connection = newConnection();
+            }
+
+            var outputStream = connection.getOutputStream();
+            outputStream.write(message.toArray(JAVA_BYTE));
+            outputStream.flush();
+
+            var inputStream = connection.getInputStream();
+
+            var bytes = inputStream.readNBytes(RHS);
+            var header = arena.allocate(RHS);
+            copy(bytes, 0, header, BYTE, 0, RHS);
+
+            var size = size(header);
+
+            bytes = inputStream.readNBytes(size);
+            var body = arena.allocate(size);
+            copy(bytes, 0, body, BYTE, 0, size);
+
+            var response = arena.allocate(header.byteSize() + body.byteSize());
+            copy(header, 0, response, 0, header.byteSize());
+            copy(body, 0, response, header.byteSize(), body.byteSize());
+
+            return response;
+        } finally {
+            connections.offer(connection);
+        }
     }
 
     private Socket newConnection() {
