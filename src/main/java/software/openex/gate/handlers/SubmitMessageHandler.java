@@ -3,8 +3,7 @@ package software.openex.gate.handlers;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
 import software.openex.gate.binary.base.ErrorMessage;
-import software.openex.gate.binary.order.BuyLimitOrder;
-import software.openex.gate.binary.order.LimitOrderBinaryRepresentation;
+import software.openex.gate.binary.order.*;
 import software.openex.gate.exceptions.ConnectionClosedException;
 
 import java.lang.foreign.Arena;
@@ -34,8 +33,8 @@ public final class SubmitMessageHandler extends HTTPHandler {
 
             switch (id) {
                 case 101 -> submitBuyLimitOrder(routingContext);
-                case 102 -> HANDLER_NOT_FOUND.send(routingContext);
-                case 104 -> HANDLER_NOT_FOUND.send(routingContext);
+                case 102 -> submitSellLimitOrder(routingContext);
+                case 104 -> submitCancelOrder(routingContext);
                 case 105 -> HANDLER_NOT_FOUND.send(routingContext);
                 case 107 -> HANDLER_NOT_FOUND.send(routingContext);
                 case 108 -> HANDLER_NOT_FOUND.send(routingContext);
@@ -74,6 +73,51 @@ public final class SubmitMessageHandler extends HTTPHandler {
                 final var result = submit(routingContext, arena, message.segment());
                 if (result.isPresent()) {
                     routingContext.put(RESPONSE_BODY, BuyLimitOrder.decode(result.get()));
+                    routingContext.next();
+                }
+            }
+        });
+    }
+
+    private void submitSellLimitOrder(final RoutingContext routingContext) {
+        context().executors().worker().submit(() -> {
+            final var body = routingContext.body().asJsonObject();
+            final var sellLimitOrder = new SellLimitOrder(
+                    body.getLong("id"),
+                    body.getLong("ts"),
+                    body.getString("symbol"),
+                    body.getString("quantity"),
+                    body.getString("price"));
+
+            try (final var arena = ofConfined()) {
+                final var message = new LimitOrderBinaryRepresentation(arena, sellLimitOrder);
+                message.encodeV1();
+
+                final var result = submit(routingContext, arena, message.segment());
+                if (result.isPresent()) {
+                    routingContext.put(RESPONSE_BODY, SellLimitOrder.decode(result.get()));
+                    routingContext.next();
+                }
+            }
+        });
+    }
+
+    private void submitCancelOrder(final RoutingContext routingContext) {
+        context().executors().worker().submit(() -> {
+            final var body = routingContext.body().asJsonObject();
+            final var cancelOrder = new CancelOrder(
+                    body.getLong("id"),
+                    body.getLong("ts"),
+                    body.getString("symbol"),
+                    body.getString("quantity"));
+
+            try (final var arena = ofConfined()) {
+                final var message = new OrderBinaryRepresentation(arena, cancelOrder);
+                message.encodeV1();
+
+                final var result = submit(routingContext, arena, message.segment());
+                if (result.isPresent()) {
+                    routingContext.put(RESPONSE_BODY, CancelOrder.decode(result.get()));
                     routingContext.next();
                 }
             }
