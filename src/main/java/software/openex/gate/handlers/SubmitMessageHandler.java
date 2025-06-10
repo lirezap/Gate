@@ -8,6 +8,9 @@ import software.openex.gate.binary.order.*;
 import software.openex.gate.binary.order.book.FetchOrderBook;
 import software.openex.gate.binary.order.book.FetchOrderBookBinaryRepresentation;
 import software.openex.gate.binary.order.book.OrderBookBinaryRepresentation;
+import software.openex.gate.binary.order.record.FetchOrderRecord;
+import software.openex.gate.binary.order.record.FetchOrderRecordBinaryRepresentation;
+import software.openex.gate.binary.order.record.OrderRecordBinaryRepresentation;
 import software.openex.gate.exceptions.ConnectionClosedException;
 
 import java.lang.foreign.Arena;
@@ -48,6 +51,7 @@ public final class SubmitMessageHandler extends HTTPHandler {
                 case 112 -> submitFOKSellLimitOrder(routingContext);
                 case 113 -> submitFOKBuyMarketOrder(routingContext);
                 case 114 -> submitFOKSellMarketOrder(routingContext);
+                case 119 -> submitFetchOrderRecord(routingContext);
 
                 default -> HANDLER_NOT_FOUND.send(routingContext);
             }
@@ -328,6 +332,26 @@ public final class SubmitMessageHandler extends HTTPHandler {
                 final var result = submit(routingContext, arena, message.segment());
                 if (result.isPresent()) {
                     routingContext.put(RESPONSE_BODY, FOKSellMarketOrder.decode(result.get()));
+                    routingContext.next();
+                }
+            }
+        });
+    }
+
+    private void submitFetchOrderRecord(final RoutingContext routingContext) {
+        context().executors().worker().submit(() -> {
+            final var body = routingContext.body().asJsonObject();
+            final var fetchOrderRecord = new FetchOrderRecord(
+                    body.getString("symbol"),
+                    body.getLong("id"));
+
+            try (final var arena = ofConfined()) {
+                final var message = new FetchOrderRecordBinaryRepresentation(arena, fetchOrderRecord);
+                message.encodeV1();
+
+                final var result = submit(routingContext, arena, message.segment());
+                if (result.isPresent()) {
+                    routingContext.put(RESPONSE_BODY, OrderRecordBinaryRepresentation.decode(result.get()));
                     routingContext.next();
                 }
             }
