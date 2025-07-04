@@ -3,7 +3,7 @@ package software.openex.gate.handlers;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import software.openex.gate.binary.base.ErrorMessage;
+import software.openex.gate.binary.base.ErrorMessageBinaryRepresentation;
 import software.openex.gate.binary.order.*;
 import software.openex.gate.binary.order.book.FetchOrderBook;
 import software.openex.gate.binary.order.book.FetchOrderBookBinaryRepresentation;
@@ -381,7 +381,7 @@ public final class SubmitMessageHandler extends HTTPHandler {
     }
 
     private void error(final RoutingContext routingContext, final MemorySegment result) {
-        final var errorMessage = ErrorMessage.decode(result);
+        final var errorMessage = ErrorMessageBinaryRepresentation.decode(result);
         routingContext.response()
                 .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                 .setStatusCode(PRECONDITION_FAILED.code())
