@@ -31,11 +31,13 @@ public final class HTTPServer implements Closeable {
     private static final Logger logger = getLogger(HTTPServer.class);
 
     private final Vertx vertx;
+    private final int requestBodyLimitSize;
     private final HttpServer httpServer;
     private final Router router;
 
     HTTPServer(final Configuration configuration, final Vertx vertx) {
         this.vertx = vertx;
+        this.requestBodyLimitSize = configuration.loadInt("http.server.request_body_limit_size");
 
         final var options = new HttpServerOptions()
                 .setHost(configuration.loadString("http.server.host"))
@@ -69,7 +71,7 @@ public final class HTTPServer implements Closeable {
     private void setupRoutes() {
         setupBaseHandlers();
 
-        final var bodyHandler = BodyHandler.create(FALSE);
+        final var bodyHandler = BodyHandler.create(FALSE).setBodyLimit(requestBodyLimitSize);
         final var jsonBodyResponderHandler = new JsonBodyResponderHandler();
         final var noContentResponderHandler = new NoContentResponderHandler();
 
