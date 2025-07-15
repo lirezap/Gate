@@ -31,13 +31,11 @@ public final class HTTPServer implements Closeable {
     private static final Logger logger = getLogger(HTTPServer.class);
 
     private final Vertx vertx;
-    private final int requestBodyLimitSize;
     private final HttpServer httpServer;
     private final Router router;
 
     HTTPServer(final Configuration configuration, final Vertx vertx) {
         this.vertx = vertx;
-        this.requestBodyLimitSize = configuration.loadInt("http.server.request_body_limit_size");
 
         final var options = new HttpServerOptions()
                 .setHost(configuration.loadString("http.server.host"))
@@ -55,7 +53,7 @@ public final class HTTPServer implements Closeable {
     }
 
     public void start() {
-        setupRoutes();
+        setupRoutes(context().config().loadInt("http.server.request_body_limit_size"));
 
         final var cause = httpServer.requestHandler(router).listen().cause();
         if (cause != null) {
@@ -68,7 +66,7 @@ public final class HTTPServer implements Closeable {
                 vertx.isNativeTransportEnabled() ? "enabled" : "not enabled");
     }
 
-    private void setupRoutes() {
+    private void setupRoutes(final int requestBodyLimitSize) {
         setupBaseHandlers();
 
         final var bodyHandler = BodyHandler.create(FALSE).setBodyLimit(requestBodyLimitSize);
@@ -84,7 +82,10 @@ public final class HTTPServer implements Closeable {
     private void setupBaseHandlers() {
         router.route().handler(ResponseTimeHandler.create());
         router.route().handler(TimeoutHandler.create(context().config().loadDuration("http.server.request_timeout").toMillis(), GATEWAY_TIMEOUT.code()));
-        router.route().handler(LoggerHandler.create(LoggerFormat.CUSTOM).customFormatter(new RequestLoggingFormatter()));
+
+        if (context().config().loadBoolean("http.server.request_logging_enabled")) {
+            router.route().handler(LoggerHandler.create(LoggerFormat.CUSTOM).customFormatter(new RequestLoggingFormatter()));
+        }
 
         if (context().config().loadBoolean("http.server.hsts_enabled")) {
             router.route().handler(HSTSHandler.create(TRUE));
