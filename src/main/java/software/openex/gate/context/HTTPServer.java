@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import static io.netty.handler.codec.http.HttpResponseStatus.GATEWAY_TIMEOUT;
 import static io.vertx.core.http.HttpMethod.*;
 import static io.vertx.ext.web.Router.router;
+import static io.vertx.ext.web.handler.HSTSHandler.DEFAULT_MAX_AGE;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -88,7 +89,7 @@ public final class HTTPServer implements Closeable {
         }
 
         if (context().config().loadBoolean("http.server.hsts_enabled")) {
-            router.route().handler(HSTSHandler.create(TRUE));
+            router.route().handler(HSTSHandler.create(DEFAULT_MAX_AGE, TRUE));
         }
 
         if (context().config().loadBoolean("http.server.csp_enabled")) {
@@ -96,7 +97,11 @@ public final class HTTPServer implements Closeable {
         }
 
         if (context().config().loadBoolean("http.server.cors_enabled")) {
-            router.route().handler(CorsHandler.create().addOrigin(context().config().loadString("http.server.cors_origin")).allowedMethods(Set.of(GET, POST, PUT, DELETE, OPTIONS)));
+            router.route().handler(CorsHandler.create()
+                    .addOrigin(context().config().loadString("http.server.cors_origin"))
+                    .allowedMethods(Set.of(POST, GET, PUT, PATCH, DELETE, OPTIONS))
+                    .allowedHeaders(Set.of("Content-Type"))
+                    .allowCredentials(context().config().loadBoolean("http.server.cors_allow_credentials")));
         }
 
         if (context().config().loadBoolean("http.server.x_frame_enabled")) {
