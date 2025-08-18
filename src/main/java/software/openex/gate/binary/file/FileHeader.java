@@ -15,24 +15,23 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-package software.openex.gate.binary.order;
+package software.openex.gate.binary.file;
 
 /**
  * @author Alireza Pourtaghi
  */
-public final class FOKSellMarketOrder extends SellMarketOrder {
+public final class FileHeader {
+    private final long durabilitySize;
 
-    public FOKSellMarketOrder(final long id, final long ts, final String symbol, final String quantity) {
-        super(id, ts, symbol, quantity);
+    public FileHeader(final long durabilitySize) {
+        this.durabilitySize = durabilitySize;
     }
 
-    @Override
-    public int representationId() {
-        return 114;
+    public int size() {
+        return 8;
     }
 
-    @Override
-    public String toString() {
-        return "FOKSellMarketOrder{} " + super.toString();
+    public long getDurabilitySize() {
+        return durabilitySize;
     }
 }
