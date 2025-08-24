@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import static java.lang.Math.addExact;
+import static java.lang.Math.incrementExact;
 import static java.lang.foreign.Arena.ofShared;
 import static java.lang.foreign.MemorySegment.copy;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -76,7 +77,7 @@ public abstract class BinaryRepresentation<T> implements BinaryRepresentable, Au
         var length = value.getBytes(UTF_8).length;
 
         // Null terminated
-        length = addExact(length, 1);
+        length = incrementExact(length);
         putInt(length);
         segment.setString(position, value);
         position = addExact(position, length);
