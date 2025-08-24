@@ -19,6 +19,7 @@ package software.openex.gate.binary.order;
 
 import java.math.BigDecimal;
 
+import static java.lang.Math.addExact;
 import static software.openex.gate.binary.BinaryRepresentable.representationSize;
 
 /**
@@ -38,7 +39,7 @@ public abstract sealed class StopOrder extends MarketOrder permits BuyStopOrder,
 
     @Override
     public int size() {
-        return super.size() + representationSize(stopPrice);
+        return addExact(super.size(), representationSize(stopPrice));
     }
 
     public final String getStopPrice() {

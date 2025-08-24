@@ -19,6 +19,7 @@ package software.openex.gate.binary.order;
 
 import java.math.BigDecimal;
 
+import static java.lang.Math.addExact;
 import static software.openex.gate.binary.BinaryRepresentable.representationSize;
 
 /**
@@ -44,7 +45,7 @@ public abstract sealed class LimitOrder extends Order implements Comparable<Limi
 
     @Override
     public int size() {
-        return super.size() + representationSize(price);
+        return addExact(super.size(), representationSize(price));
     }
 
     public final String getPrice() {

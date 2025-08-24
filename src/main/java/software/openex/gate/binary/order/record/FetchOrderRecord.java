@@ -17,6 +17,7 @@
  */
 package software.openex.gate.binary.order.record;
 
+import static java.lang.Math.addExact;
 import static software.openex.gate.binary.BinaryRepresentable.representationSize;
 
 /**
@@ -32,7 +33,7 @@ public final class FetchOrderRecord {
     }
 
     public int size() {
-        return representationSize(symbol) + 8;
+        return addExact(representationSize(symbol), 8);
     }
 
     public String getSymbol() {
