@@ -20,9 +20,9 @@ package software.openex.gate.context;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.ext.healthchecks.HealthCheckHandler;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.*;
+import io.vertx.ext.web.healthchecks.HealthCheckHandler;
 import org.slf4j.Logger;
 import software.openex.gate.handlers.*;
 
