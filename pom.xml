@@ -24,9 +24,9 @@
 
         <!-- Dependencies Versioning -->
         <lightbend.config.version>1.4.3</lightbend.config.version>
-        <vertx.version>4.5.17</vertx.version>
+        <vertx.version>5.0.3</vertx.version>
         <netty.version>4.2.3.Final</netty.version>
-        <micrometer.registry.prometheus.version>1.15.2</micrometer.registry.prometheus.version>
+        <micrometer.registry.prometheus.version>1.15.3</micrometer.registry.prometheus.version>
         <jackson.databind.version>2.19.2</jackson.databind.version>
     </properties>
 
