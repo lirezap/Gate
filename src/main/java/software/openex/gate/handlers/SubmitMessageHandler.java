@@ -154,7 +154,7 @@ public final class SubmitMessageHandler extends HTTPHandler {
             final var body = routingContext.body().asJsonObject();
             final var fetchOrderBook = new FetchOrderBook(
                     body.getString("symbol"),
-                    body.getInteger("fetchSize", 1000));
+                    body.getInteger("fetchSize", 10));
 
             try (final var arena = ofConfined()) {
                 final var message = new FetchOrderBookBinaryRepresentation(arena, fetchOrderBook);
