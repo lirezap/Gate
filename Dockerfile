@@ -1,4 +1,4 @@
-FROM ghcr.io/graalvm/jdk-community:24
+FROM ghcr.io/graalvm/jdk-community:25
 
 RUN mkdir /opt/app
 WORKDIR /opt/app
