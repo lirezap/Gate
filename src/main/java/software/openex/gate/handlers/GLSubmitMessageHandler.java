@@ -130,7 +130,7 @@ public final class GLSubmitMessageHandler extends HTTPHandler {
 
     private Optional<MemorySegment> submit(final RoutingContext routingContext, final Arena arena, final MemorySegment message) {
         try {
-            final var result = context().oms().send(arena, message);
+            final var result = context().gl().send(arena, message);
             if (id(result) == -1) {
                 error(routingContext, result);
             } else {
