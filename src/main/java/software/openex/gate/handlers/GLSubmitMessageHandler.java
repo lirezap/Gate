@@ -18,11 +18,11 @@
 package software.openex.gate.handlers;
 
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RoutingContext;
+import software.openex.gate.binary.BinaryRepresentation;
 import software.openex.gate.binary.base.ErrorMessageBinaryRepresentation;
-import software.openex.gate.binary.gl.transaction.InquiryTransaction;
-import software.openex.gate.binary.gl.transaction.InquiryTransactionBinaryRepresentation;
-import software.openex.gate.binary.gl.transaction.TransactionBinaryRepresentation;
+import software.openex.gate.binary.gl.transaction.*;
 import software.openex.gate.binary.gl.wallet.*;
 import software.openex.gate.exceptions.ConnectionClosedException;
 
@@ -30,6 +30,7 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
@@ -54,6 +55,8 @@ public final class GLSubmitMessageHandler extends HTTPHandler {
             switch (id) {
                 case 103 -> submitFetchAccount(routingContext);
                 case 104 -> submitFetchWallet(routingContext);
+                case 202 -> submitBatch(routingContext);
+                case 203 -> submitAtomicBatch(routingContext);
                 case 206 -> submitInquiryTransaction(routingContext);
 
                 default -> HANDLER_NOT_FOUND.send(routingContext);
@@ -102,6 +105,84 @@ public final class GLSubmitMessageHandler extends HTTPHandler {
                 final var result = submit(routingContext, arena, message.segment());
                 if (result.isPresent()) {
                     routingContext.put(RESPONSE_BODY, WalletBinaryRepresentation.decode(result.get()));
+                    routingContext.next();
+                }
+            }
+        });
+    }
+
+    private void submitBatch(final RoutingContext routingContext) {
+        context().executors().worker().submit(() -> {
+            final var body = routingContext.body().asJsonObject();
+            final var transactions = body.getJsonArray("transactions", new JsonArray());
+
+            try (final var arena = ofConfined()) {
+                final var batch = new ArrayList<BinaryRepresentation<Transaction>>(transactions.size());
+                for (int i = 0; i < transactions.size(); i++) {
+                    final var transaction = transactions.getJsonObject(i);
+                    final var batchItem = new Transaction(
+                            transaction.getInteger("ledger", 0),
+                            transaction.getLong("sourceAccount", 0L),
+                            transaction.getInteger("sourceWallet", 0),
+                            transaction.getLong("destinationAccount", 0L),
+                            transaction.getInteger("destinationWallet", 0),
+                            transaction.getString("id", ""),
+                            transaction.getString("currency", ""),
+                            transaction.getLong("amount", 0L),
+                            transaction.getLong("maxOverdraftAmount", 0L),
+                            transaction.getString("metadata", ""));
+
+                    final var batchItemBinaryRepresentation = new TransactionBinaryRepresentation(arena, batchItem);
+                    batchItemBinaryRepresentation.encodeV1();
+                    batch.add(batchItemBinaryRepresentation);
+                }
+
+                final var model = new Batch(batch);
+                final var message = new BatchBinaryRepresentation(arena, model);
+                message.encodeV1();
+
+                final var result = submit(routingContext, arena, message.segment());
+                if (result.isPresent()) {
+                    routingContext.put(RESPONSE_BODY, FailedTransactionsBinaryRepresentation.items(result.get()));
+                    routingContext.next();
+                }
+            }
+        });
+    }
+
+    private void submitAtomicBatch(final RoutingContext routingContext) {
+        context().executors().worker().submit(() -> {
+            final var body = routingContext.body().asJsonObject();
+            final var transactions = body.getJsonArray("transactions", new JsonArray());
+
+            try (final var arena = ofConfined()) {
+                final var batch = new ArrayList<BinaryRepresentation<Transaction>>(transactions.size());
+                for (int i = 0; i < transactions.size(); i++) {
+                    final var transaction = transactions.getJsonObject(i);
+                    final var batchItem = new Transaction(
+                            transaction.getInteger("ledger", 0),
+                            transaction.getLong("sourceAccount", 0L),
+                            transaction.getInteger("sourceWallet", 0),
+                            transaction.getLong("destinationAccount", 0L),
+                            transaction.getInteger("destinationWallet", 0),
+                            transaction.getString("id", ""),
+                            transaction.getString("currency", ""),
+                            transaction.getLong("amount", 0L),
+                            transaction.getLong("maxOverdraftAmount", 0L),
+                            transaction.getString("metadata", ""));
+
+                    final var batchItemBinaryRepresentation = new TransactionBinaryRepresentation(arena, batchItem);
+                    batchItemBinaryRepresentation.encodeV1();
+                    batch.add(batchItemBinaryRepresentation);
+                }
+
+                final var model = new Batch(batch);
+                final var message = new AtomicBatchBinaryRepresentation(arena, model);
+                message.encodeV1();
+
+                final var result = submit(routingContext, arena, message.segment());
+                if (result.isPresent()) {
+                    routingContext.put(RESPONSE_BODY, FailedTransactionsBinaryRepresentation.items(result.get()));
                     routingContext.next();
                 }
             }
