@@ -31,6 +31,11 @@ public enum Error {
     // Validation
     ID_NOT_VALID("id.not_valid", "", HttpResponseStatus.BAD_REQUEST.code()),
 
+    // GL
+    GL_CONNECT_TIMEOUT("gl.connect_timeout", "GL server connect timeout", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
+    GL_REQUEST_TIMEOUT("gl.request_timeout", "GL server request timeout", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
+    GL_NOT_REACHABLE("gl.not_reachable", "GL server not reachable", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
+
     // OMS
     OMS_CONNECT_TIMEOUT("oms.connect_timeout", "OMS server connect timeout", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
     OMS_REQUEST_TIMEOUT("oms.request_timeout", "OMS server request timeout", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
