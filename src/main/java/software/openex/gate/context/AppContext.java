@@ -44,7 +44,8 @@ public final class AppContext implements Closeable {
     private static AppContext context;
 
     private final Configuration configuration;
-    private final OMSConnectionPool omsConnectionPool;
+    private final ConnectionPool glConnectionPool;
+    private final ConnectionPool omsConnectionPool;
     private final Executors executors;
     private final Vertx vertx;
     private final HTTPServer httpServer;
@@ -53,7 +54,8 @@ public final class AppContext implements Closeable {
         addShutdownHook();
 
         this.configuration = new Configuration();
-        this.omsConnectionPool = new OMSConnectionPool(this.configuration);
+        this.glConnectionPool = glConnectionPool(this.configuration);
+        this.omsConnectionPool = omsConnectionPool(this.configuration);
         this.executors = new Executors(this.configuration);
         this.vertx = Vertx.vertx(vertxOptions(this.configuration));
         this.httpServer = new HTTPServer(this.configuration, this.vertx);
@@ -97,7 +99,11 @@ public final class AppContext implements Closeable {
         return configuration;
     }
 
-    public OMSConnectionPool oms() {
+    public ConnectionPool gl() {
+        return glConnectionPool;
+    }
+
+    public ConnectionPool oms() {
         return omsConnectionPool;
     }
 
@@ -111,6 +117,34 @@ public final class AppContext implements Closeable {
 
     public HTTPServer httpServer() {
         return httpServer;
+    }
+
+    private static ConnectionPool glConnectionPool(final Configuration configuration) {
+        if (configuration.loadBoolean("gl.connect")) {
+            return new ConnectionPool(
+                    configuration.loadString("gl.host"),
+                    configuration.loadInt("gl.port"),
+                    (int) configuration.loadDuration("gl.connect_timeout").toMillis(),
+                    (int) configuration.loadDuration("gl.request_timeout").toMillis(),
+                    configuration.loadInt("gl.connections_count"));
+        }
+
+        logger.warn("Connect request to GL is not active!");
+        return null;
+    }
+
+    private static ConnectionPool omsConnectionPool(final Configuration configuration) {
+        if (configuration.loadBoolean("oms.connect")) {
+            return new ConnectionPool(
+                    configuration.loadString("oms.host"),
+                    configuration.loadInt("oms.port"),
+                    (int) configuration.loadDuration("oms.connect_timeout").toMillis(),
+                    (int) configuration.loadDuration("oms.request_timeout").toMillis(),
+                    configuration.loadInt("oms.connections_count"));
+        }
+
+        logger.warn("Connect request to OMS is not active!");
+        return null;
     }
 
     private static VertxOptions vertxOptions(final Configuration configuration) {
@@ -147,6 +181,7 @@ public final class AppContext implements Closeable {
             if (httpServer != null) httpServer.close();
             if (executors != null) executors.close();
             if (omsConnectionPool != null) omsConnectionPool.close();
+            if (glConnectionPool != null) glConnectionPool.close();
         } catch (Exception ex) {
             logger.error("{}", ex.getMessage());
         }

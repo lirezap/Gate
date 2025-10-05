@@ -91,7 +91,8 @@ public final class HTTPServer implements Closeable {
         final var jsonBodyResponderHandler = new JsonBodyResponderHandler();
         final var noContentResponderHandler = new NoContentResponderHandler();
 
-        router.post("/v1/messages").handler(bodyHandler).handler(new SubmitMessageHandler()).handler(jsonBodyResponderHandler);
+        router.post("/v1/gl/messages").handler(bodyHandler).handler(new GLSubmitMessageHandler()).handler(jsonBodyResponderHandler);
+        router.post("/v1/oms/messages").handler(bodyHandler).handler(new OMSSubmitMessageHandler()).handler(jsonBodyResponderHandler);
 
         router.get("/v1/ready").handler(new LiveNessHandler());
         router.get("/health*").handler(healthChecksHandler());

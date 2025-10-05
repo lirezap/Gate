@@ -16,7 +16,7 @@
     <artifactId>gate</artifactId>
     <version>0.0.17</version>
     <name>gate</name>
-    <description>Gateway of OMS</description>
+    <description>Gate to Access GL/OMS</description>
 
     <properties>
         <!-- Java Version -->
