@@ -95,6 +95,17 @@ public final class AppContext implements Closeable {
         return context;
     }
 
+    /**
+     * Returns new instance of application context.
+     * This method must only be used for testing purposes.
+     *
+     * @return new application context
+     */
+    public static AppContext contextTest() {
+        context = new AppContext();
+        return context;
+    }
+
     public Configuration config() {
         return configuration;
     }
@@ -129,7 +140,7 @@ public final class AppContext implements Closeable {
                     configuration.loadInt("gl.connections_count"));
         }
 
-        logger.warn("Connect request to GL is not active!");
+        logger.warn("Connect option to GL is not set!");
         return null;
     }
 
@@ -143,7 +154,7 @@ public final class AppContext implements Closeable {
                     configuration.loadInt("oms.connections_count"));
         }
 
-        logger.warn("Connect request to OMS is not active!");
+        logger.warn("Connect option to OMS is not set!");
         return null;
     }
 
