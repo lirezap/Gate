@@ -84,7 +84,7 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
     private void submitBuyLimitOrder(final RoutingContext routingContext) {
         context().executors().worker().submit(() -> {
             final var body = routingContext.body().asJsonObject();
-            final var buyLimitOrder = new BuyLimitOrder(
+            final var model = new BuyLimitOrder(
                     body.getLong("id"),
                     body.getLong("ts"),
                     body.getString("symbol"),
@@ -92,7 +92,7 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
                     body.getString("price"));
 
             try (final var arena = ofConfined()) {
-                final var message = new LimitOrderBinaryRepresentation(arena, buyLimitOrder);
+                final var message = new LimitOrderBinaryRepresentation(arena, model);
                 message.encodeV1();
 
                 final var result = submit(routingContext, arena, message.segment());
@@ -107,7 +107,7 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
     private void submitSellLimitOrder(final RoutingContext routingContext) {
         context().executors().worker().submit(() -> {
             final var body = routingContext.body().asJsonObject();
-            final var sellLimitOrder = new SellLimitOrder(
+            final var model = new SellLimitOrder(
                     body.getLong("id"),
                     body.getLong("ts"),
                     body.getString("symbol"),
@@ -115,7 +115,7 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
                     body.getString("price"));
 
             try (final var arena = ofConfined()) {
-                final var message = new LimitOrderBinaryRepresentation(arena, sellLimitOrder);
+                final var message = new LimitOrderBinaryRepresentation(arena, model);
                 message.encodeV1();
 
                 final var result = submit(routingContext, arena, message.segment());
@@ -130,14 +130,14 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
     private void submitCancelOrder(final RoutingContext routingContext) {
         context().executors().worker().submit(() -> {
             final var body = routingContext.body().asJsonObject();
-            final var cancelOrder = new CancelOrder(
+            final var model = new CancelOrder(
                     body.getLong("id"),
                     body.getLong("ts"),
                     body.getString("symbol"),
                     body.getString("quantity"));
 
             try (final var arena = ofConfined()) {
-                final var message = new OrderBinaryRepresentation(arena, cancelOrder);
+                final var message = new OrderBinaryRepresentation(arena, model);
                 message.encodeV1();
 
                 final var result = submit(routingContext, arena, message.segment());
@@ -152,12 +152,12 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
     private void submitFetchOrderBook(final RoutingContext routingContext) {
         context().executors().worker().submit(() -> {
             final var body = routingContext.body().asJsonObject();
-            final var fetchOrderBook = new FetchOrderBook(
+            final var model = new FetchOrderBook(
                     body.getString("symbol"),
                     body.getInteger("fetchSize", 10));
 
             try (final var arena = ofConfined()) {
-                final var message = new FetchOrderBookBinaryRepresentation(arena, fetchOrderBook);
+                final var message = new FetchOrderBookBinaryRepresentation(arena, model);
                 message.encodeV1();
 
                 final var result = submit(routingContext, arena, message.segment());
@@ -178,14 +178,14 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
     private void submitBuyMarketOrder(final RoutingContext routingContext) {
         context().executors().worker().submit(() -> {
             final var body = routingContext.body().asJsonObject();
-            final var buyMarketOrder = new BuyMarketOrder(
+            final var model = new BuyMarketOrder(
                     body.getLong("id"),
                     body.getLong("ts"),
                     body.getString("symbol"),
                     body.getString("quantity"));
 
             try (final var arena = ofConfined()) {
-                final var message = new OrderBinaryRepresentation(arena, buyMarketOrder);
+                final var message = new OrderBinaryRepresentation(arena, model);
                 message.encodeV1();
 
                 final var result = submit(routingContext, arena, message.segment());
@@ -200,14 +200,14 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
     private void submitSellMarketOrder(final RoutingContext routingContext) {
         context().executors().worker().submit(() -> {
             final var body = routingContext.body().asJsonObject();
-            final var sellMarketOrder = new SellMarketOrder(
+            final var model = new SellMarketOrder(
                     body.getLong("id"),
                     body.getLong("ts"),
                     body.getString("symbol"),
                     body.getString("quantity"));
 
             try (final var arena = ofConfined()) {
-                final var message = new OrderBinaryRepresentation(arena, sellMarketOrder);
+                final var message = new OrderBinaryRepresentation(arena, model);
                 message.encodeV1();
 
                 final var result = submit(routingContext, arena, message.segment());
@@ -222,7 +222,7 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
     private void submitIOCBuyLimitOrder(final RoutingContext routingContext) {
         context().executors().worker().submit(() -> {
             final var body = routingContext.body().asJsonObject();
-            final var iocBuyLimitOrder = new IOCBuyLimitOrder(
+            final var model = new IOCBuyLimitOrder(
                     body.getLong("id"),
                     body.getLong("ts"),
                     body.getString("symbol"),
@@ -230,7 +230,7 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
                     body.getString("price"));
 
             try (final var arena = ofConfined()) {
-                final var message = new LimitOrderBinaryRepresentation(arena, iocBuyLimitOrder);
+                final var message = new LimitOrderBinaryRepresentation(arena, model);
                 message.encodeV1();
 
                 final var result = submit(routingContext, arena, message.segment());
@@ -245,7 +245,7 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
     private void submitIOCSellLimitOrder(final RoutingContext routingContext) {
         context().executors().worker().submit(() -> {
             final var body = routingContext.body().asJsonObject();
-            final var iocSellLimitOrder = new IOCSellLimitOrder(
+            final var model = new IOCSellLimitOrder(
                     body.getLong("id"),
                     body.getLong("ts"),
                     body.getString("symbol"),
@@ -253,7 +253,7 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
                     body.getString("price"));
 
             try (final var arena = ofConfined()) {
-                final var message = new LimitOrderBinaryRepresentation(arena, iocSellLimitOrder);
+                final var message = new LimitOrderBinaryRepresentation(arena, model);
                 message.encodeV1();
 
                 final var result = submit(routingContext, arena, message.segment());
@@ -268,7 +268,7 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
     private void submitFOKBuyLimitOrder(final RoutingContext routingContext) {
         context().executors().worker().submit(() -> {
             final var body = routingContext.body().asJsonObject();
-            final var fokBuyLimitOrder = new FOKBuyLimitOrder(
+            final var model = new FOKBuyLimitOrder(
                     body.getLong("id"),
                     body.getLong("ts"),
                     body.getString("symbol"),
@@ -276,7 +276,7 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
                     body.getString("price"));
 
             try (final var arena = ofConfined()) {
-                final var message = new LimitOrderBinaryRepresentation(arena, fokBuyLimitOrder);
+                final var message = new LimitOrderBinaryRepresentation(arena, model);
                 message.encodeV1();
 
                 final var result = submit(routingContext, arena, message.segment());
@@ -291,7 +291,7 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
     private void submitFOKSellLimitOrder(final RoutingContext routingContext) {
         context().executors().worker().submit(() -> {
             final var body = routingContext.body().asJsonObject();
-            final var fokSellLimitOrder = new FOKSellLimitOrder(
+            final var model = new FOKSellLimitOrder(
                     body.getLong("id"),
                     body.getLong("ts"),
                     body.getString("symbol"),
@@ -299,7 +299,7 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
                     body.getString("price"));
 
             try (final var arena = ofConfined()) {
-                final var message = new LimitOrderBinaryRepresentation(arena, fokSellLimitOrder);
+                final var message = new LimitOrderBinaryRepresentation(arena, model);
                 message.encodeV1();
 
                 final var result = submit(routingContext, arena, message.segment());
@@ -314,14 +314,14 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
     private void submitFOKBuyMarketOrder(final RoutingContext routingContext) {
         context().executors().worker().submit(() -> {
             final var body = routingContext.body().asJsonObject();
-            final var fokBuyMarketOrder = new FOKBuyMarketOrder(
+            final var model = new FOKBuyMarketOrder(
                     body.getLong("id"),
                     body.getLong("ts"),
                     body.getString("symbol"),
                     body.getString("quantity"));
 
             try (final var arena = ofConfined()) {
-                final var message = new OrderBinaryRepresentation(arena, fokBuyMarketOrder);
+                final var message = new OrderBinaryRepresentation(arena, model);
                 message.encodeV1();
 
                 final var result = submit(routingContext, arena, message.segment());
@@ -336,14 +336,14 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
     private void submitFOKSellMarketOrder(final RoutingContext routingContext) {
         context().executors().worker().submit(() -> {
             final var body = routingContext.body().asJsonObject();
-            final var fokSellMarketOrder = new FOKSellMarketOrder(
+            final var model = new FOKSellMarketOrder(
                     body.getLong("id"),
                     body.getLong("ts"),
                     body.getString("symbol"),
                     body.getString("quantity"));
 
             try (final var arena = ofConfined()) {
-                final var message = new OrderBinaryRepresentation(arena, fokSellMarketOrder);
+                final var message = new OrderBinaryRepresentation(arena, model);
                 message.encodeV1();
 
                 final var result = submit(routingContext, arena, message.segment());
@@ -358,12 +358,12 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
     private void submitFetchOrderRecord(final RoutingContext routingContext) {
         context().executors().worker().submit(() -> {
             final var body = routingContext.body().asJsonObject();
-            final var fetchOrderRecord = new FetchOrderRecord(
+            final var model = new FetchOrderRecord(
                     body.getString("symbol"),
                     body.getLong("id"));
 
             try (final var arena = ofConfined()) {
-                final var message = new FetchOrderRecordBinaryRepresentation(arena, fetchOrderRecord);
+                final var message = new FetchOrderRecordBinaryRepresentation(arena, model);
                 message.encodeV1();
 
                 final var result = submit(routingContext, arena, message.segment());
