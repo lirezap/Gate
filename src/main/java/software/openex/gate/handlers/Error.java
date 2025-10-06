@@ -33,12 +33,12 @@ public enum Error {
 
     // GL
     GL_CONNECT_TIMEOUT("gl.connect_timeout", "GL server connect timeout", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
-    GL_REQUEST_TIMEOUT("gl.request_timeout", "GL server request timeout", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
+    GL_REQUEST_TIMEOUT("gl.request_timeout", "GL server request timeout", HttpResponseStatus.GATEWAY_TIMEOUT.code()),
     GL_NOT_REACHABLE("gl.not_reachable", "GL server not reachable", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
 
     // OMS
     OMS_CONNECT_TIMEOUT("oms.connect_timeout", "OMS server connect timeout", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
-    OMS_REQUEST_TIMEOUT("oms.request_timeout", "OMS server request timeout", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
+    OMS_REQUEST_TIMEOUT("oms.request_timeout", "OMS server request timeout", HttpResponseStatus.GATEWAY_TIMEOUT.code()),
     OMS_NOT_REACHABLE("oms.not_reachable", "OMS server not reachable", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
 
     // General

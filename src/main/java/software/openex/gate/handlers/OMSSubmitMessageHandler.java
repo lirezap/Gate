@@ -41,6 +41,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.PRECONDITION_FAILED
 import static io.vertx.core.json.JsonObject.mapFrom;
 import static java.lang.Integer.parseInt;
 import static java.lang.foreign.Arena.ofConfined;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static software.openex.gate.binary.BinaryRepresentable.id;
 import static software.openex.gate.context.AppContext.context;
 import static software.openex.gate.handlers.Error.*;
@@ -375,13 +377,15 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
         });
     }
 
-    private Optional<MemorySegment> submit(final RoutingContext routingContext, final Arena arena, final MemorySegment message) {
+    private Optional<MemorySegment> submit(final RoutingContext routingContext, final Arena arena,
+                                           final MemorySegment message) {
+
         try {
             final var result = context().oms().send(arena, message);
             if (id(result) == -1) {
                 error(routingContext, result);
             } else {
-                return Optional.of(result);
+                return of(result);
             }
         } catch (TimeoutException ex) {
             OMS_CONNECT_TIMEOUT.send(routingContext);
@@ -394,7 +398,7 @@ public final class OMSSubmitMessageHandler extends HTTPHandler {
             SERVER_ERROR.send(routingContext);
         }
 
-        return Optional.empty();
+        return empty();
     }
 
     private void error(final RoutingContext routingContext, final MemorySegment result) {
