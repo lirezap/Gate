@@ -100,6 +100,7 @@ public final class HTTPServer implements Closeable {
     }
 
     private void setupBaseHandlers() {
+        router.route().handler(new RealIPDetectorHandler());
         router.route().handler(ResponseTimeHandler.create());
         router.route().handler(TimeoutHandler.create(context().config().loadDuration("http.server.request_timeout").toMillis(), GATEWAY_TIMEOUT.code()));
 

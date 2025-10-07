@@ -22,7 +22,7 @@ import io.vertx.ext.web.RoutingContext;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
- * Server live-ness checker handler.
+ * Server live-ness check handler.
  *
  * @author Alireza Pourtaghi
  */

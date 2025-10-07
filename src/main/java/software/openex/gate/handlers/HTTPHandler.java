@@ -31,7 +31,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 public abstract class HTTPHandler implements Handler<RoutingContext> {
     protected final Logger logger = getLogger(this.getClass());
 
-    protected static final String X_FRAME_OPTIONS = "X-FRAME-OPTIONS";
+    protected static final String X_REAL_IP = "X-Real-Ip";
+    protected static final String X_FORWARDED_FOR = "X-Forwarded-For";
     protected static final String CACHE_CONTROL = "Cache-Control";
-    protected static final String RESPONSE_BODY = "RESPONSE_BODY";
+    protected static final String RESPONSE_BODY = "Response-Body";
 }

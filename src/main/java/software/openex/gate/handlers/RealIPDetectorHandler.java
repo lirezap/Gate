@@ -19,31 +19,30 @@ package software.openex.gate.handlers;
 
 import io.vertx.ext.web.RoutingContext;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
-import static io.vertx.core.json.Json.encodeToBuffer;
-import static software.openex.gate.handlers.Error.SERVER_ERROR;
-
 /**
- * Json body responder handler implementation.
+ * Real IP detector handler implementation.
  *
  * @author Alireza Pourtaghi
  */
-public final class JsonBodyResponderHandler extends HTTPHandler {
+public final class RealIPDetectorHandler extends HTTPHandler {
 
     @Override
     public void handle(final RoutingContext routingContext) {
-        try {
-            routingContext.response().putHeader(CACHE_CONTROL, "no-store");
+        // If ip was not set, suppose it's from localhost.
+        var ip = "192.168.1.1";
 
-            final var response = encodeToBuffer(routingContext.get(RESPONSE_BODY));
-            routingContext.response()
-                    .setStatusCode(OK.code())
-                    .putHeader(CONTENT_TYPE, "application/json")
-                    .end(response);
-        } catch (RuntimeException ex) {
-            logger.error("{}", ex.getMessage());
-            SERVER_ERROR.send(routingContext);
+        final var xRealIp = routingContext.request().getHeader(X_REAL_IP);
+        if (xRealIp != null && !xRealIp.isBlank()) {
+            ip = xRealIp;
         }
+
+        final var xForwardedFor = routingContext.request().getHeader(X_FORWARDED_FOR);
+        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
+            ip = xForwardedFor.split(",")[0];
+        }
+
+        routingContext.request().headers().remove(X_REAL_IP);
+        routingContext.request().headers().add(X_REAL_IP, ip);
+        routingContext.next();
     }
 }

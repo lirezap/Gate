@@ -31,16 +31,16 @@ public final class RequestLoggingFormatter implements LoggerFormatter {
 
     @Override
     public String format(final RoutingContext routingContext, final long responseTime) {
-        final var ip = routingContext.request().getHeader("x-real-ip");
+        final var ip = routingContext.request().getHeader("X-Real-Ip");
         final var method = routingContext.request().method().name();
         final var uri = routingContext.request().uri();
         final var version = routingContext.request().version().name();
-        final var referrer = routingContext.request().getHeader("referrer");
-        final var userAgent = routingContext.request().getHeader("user-agent");
-        final var trackId = routingContext.request().getHeader("x-track-id");
+        final var referrer = routingContext.request().getHeader("Referrer");
+        final var userAgent = routingContext.request().getHeader("User-Agent");
+        final var trackId = routingContext.request().getHeader("X-Track-Id");
         final var responseStatusCode = routingContext.response().getStatusCode();
 
-        return String.format("%s | %s | %s %s %s | referrer: %s | user-agent: %s | x-track-id: %s | response-status-code: %s | response-time: %s",
+        return String.format("%s | %s | %s %s %s | Referrer: %s | User-Agent: %s | X-Track-Id: %s | Response-Status-Code: %s | Response-Time: %s",
                 ip,
                 formatRFC1123DateTime(System.currentTimeMillis()),
                 method,

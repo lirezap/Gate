@@ -32,7 +32,6 @@ public final class NoContentResponderHandler extends HTTPHandler {
     @Override
     public void handle(final RoutingContext routingContext) {
         try {
-            routingContext.response().putHeader(X_FRAME_OPTIONS, "nosniff");
             routingContext.response().putHeader(CACHE_CONTROL, "no-store");
 
             routingContext.response()
