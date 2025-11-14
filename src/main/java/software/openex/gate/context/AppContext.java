@@ -44,6 +44,7 @@ public final class AppContext implements Closeable {
     private static AppContext context;
 
     private final Configuration configuration;
+    private final SignatureVerifier signatureVerifier;
     private final ConnectionPool glConnectionPool;
     private final ConnectionPool omsConnectionPool;
     private final Executors executors;
@@ -54,6 +55,7 @@ public final class AppContext implements Closeable {
         addShutdownHook();
 
         this.configuration = new Configuration();
+        this.signatureVerifier = new SignatureVerifier(this.configuration);
         this.glConnectionPool = glConnectionPool(this.configuration);
         this.omsConnectionPool = omsConnectionPool(this.configuration);
         this.executors = new Executors(this.configuration);
@@ -108,6 +110,10 @@ public final class AppContext implements Closeable {
 
     public Configuration config() {
         return configuration;
+    }
+
+    public SignatureVerifier signatureVerifier() {
+        return signatureVerifier;
     }
 
     public ConnectionPool gl() {

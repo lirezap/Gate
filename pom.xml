@@ -28,6 +28,7 @@
         <netty.version>4.2.4.Final</netty.version>
         <micrometer.registry.prometheus.version>1.12.13</micrometer.registry.prometheus.version>
         <jackson.databind.version>2.19.2</jackson.databind.version>
+        <bouncycastle.fips.version>2.1.2</bouncycastle.fips.version>
     </properties>
 
     <dependencies>
@@ -107,6 +108,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bc-fips</artifactId>
+            <version>${bouncycastle.fips.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
@@ -120,6 +127,18 @@
 
     <build>
         <plugins>
+            <!-- Maven Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.1</version>
+                <configuration>
+                    <compilerArgs>
+                        <arg>--enable-preview</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
             <!-- Spring Boot Maven Plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
