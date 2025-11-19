@@ -29,6 +29,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.readString;
 import static java.nio.file.Path.of;
 import static java.security.Signature.getInstance;
+import static java.util.Base64.getDecoder;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -40,12 +41,10 @@ public final class SignatureVerifier {
     private static final Logger logger = getLogger(SignatureVerifier.class);
 
     private final Provider provider;
-    private final boolean verificationEnabled;
     private final PublicKey publicKey;
 
     SignatureVerifier(final Configuration configuration) {
         this.provider = new BouncyCastleFipsProvider();
-        this.verificationEnabled = configuration.loadBoolean("signature.verification_enabled");
         this.publicKey = decodePublicKey(configuration.loadString("signature.public_key_path"));
     }
 
@@ -54,21 +53,16 @@ public final class SignatureVerifier {
     }
 
     public boolean verify(final byte[] contentBytes, final byte[] signatureBytes) {
-        if (verificationEnabled) {
-            try {
-                // TODO: Improve performance by using objects pool.
-                final var signature = getInstance("SHA3-512withRSA", provider);
-                signature.initVerify(publicKey);
-                signature.update(contentBytes);
+        try {
+            // TODO: Improve performance by using objects pool.
+            final var signature = getInstance("SHA3-512withRSA", provider);
+            signature.initVerify(publicKey);
+            signature.update(contentBytes);
 
-                return signature.verify(signatureBytes);
-            } catch (Exception ex) {
-                logger.error("could not verify content: {} with signature: {}", new String(contentBytes), new String(signatureBytes));
-                return false;
-            }
-        } else {
-            // Verification not enabled, return true to bypass verification process.
-            return true;
+            return signature.verify(getDecoder().decode(signatureBytes));
+        } catch (Exception ex) {
+            logger.error("could not verify content: {} with signature: {}", new String(contentBytes), new String(signatureBytes));
+            return false;
         }
     }
 

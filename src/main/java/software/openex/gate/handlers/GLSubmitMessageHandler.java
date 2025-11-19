@@ -37,6 +37,7 @@ import java.util.concurrent.TimeoutException;
 import static io.netty.handler.codec.http.HttpResponseStatus.PRECONDITION_FAILED;
 import static io.vertx.core.json.JsonObject.mapFrom;
 import static java.lang.Integer.parseInt;
+import static java.lang.String.format;
 import static java.lang.foreign.Arena.ofConfined;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -79,6 +80,15 @@ public final class GLSubmitMessageHandler extends HTTPHandler {
                     body.getInteger("ledger", 0),
                     body.getLong("account", 0L));
 
+            if (context().signatureVerifier() != null) {
+                var content = format("%s,%s", model.getLedger(), model.getAccount());
+                var signature = body.getString("signature", "");
+                if (!context().signatureVerifier().verify(content, signature)) {
+                    SIGNATURE_VERIFICATION_FAILED.send(routingContext);
+                    return;
+                }
+            }
+
             try (final var arena = ofConfined()) {
                 final var message = new FetchAccountBinaryRepresentation(arena, model);
                 message.encodeV1();
@@ -99,6 +109,15 @@ public final class GLSubmitMessageHandler extends HTTPHandler {
                     body.getInteger("ledger", 0),
                     body.getLong("account", 0L),
                     body.getInteger("wallet", 0));
+
+            if (context().signatureVerifier() != null) {
+                var content = format("%s,%s,%s", model.getLedger(), model.getAccount(), model.getWallet());
+                var signature = body.getString("signature", "");
+                if (!context().signatureVerifier().verify(content, signature)) {
+                    SIGNATURE_VERIFICATION_FAILED.send(routingContext);
+                    return;
+                }
+            }
 
             try (final var arena = ofConfined()) {
                 final var message = new FetchWalletBinaryRepresentation(arena, model);
@@ -133,6 +152,23 @@ public final class GLSubmitMessageHandler extends HTTPHandler {
                             transaction.getLong("amount", 0L),
                             transaction.getLong("maxOverdraftAmount", 0L),
                             transaction.getString("metadata", ""));
+
+                    if (context().signatureVerifier() != null) {
+                        var content = format("%s,%s,%s,%s,%s,%s,%s",
+                                batchItem.getLedger(),
+                                batchItem.getSourceAccount(),
+                                batchItem.getSourceWallet(),
+                                batchItem.getDestinationAccount(),
+                                batchItem.getDestinationWallet(),
+                                batchItem.getCurrency(),
+                                batchItem.getAmount());
+
+                        var signature = transaction.getString("signature", "");
+                        if (!context().signatureVerifier().verify(content, signature)) {
+                            SIGNATURE_VERIFICATION_FAILED.send(routingContext);
+                            return;
+                        }
+                    }
 
                     final var batchItemBinaryRepresentation = new TransactionBinaryRepresentation(arena, batchItem);
                     batchItemBinaryRepresentation.encodeV1();
@@ -173,6 +209,23 @@ public final class GLSubmitMessageHandler extends HTTPHandler {
                             transaction.getLong("maxOverdraftAmount", 0L),
                             transaction.getString("metadata", ""));
 
+                    if (context().signatureVerifier() != null) {
+                        var content = format("%s,%s,%s,%s,%s,%s,%s",
+                                batchItem.getLedger(),
+                                batchItem.getSourceAccount(),
+                                batchItem.getSourceWallet(),
+                                batchItem.getDestinationAccount(),
+                                batchItem.getDestinationWallet(),
+                                batchItem.getCurrency(),
+                                batchItem.getAmount());
+
+                        var signature = transaction.getString("signature", "");
+                        if (!context().signatureVerifier().verify(content, signature)) {
+                            SIGNATURE_VERIFICATION_FAILED.send(routingContext);
+                            return;
+                        }
+                    }
+
                     final var batchItemBinaryRepresentation = new TransactionBinaryRepresentation(arena, batchItem);
                     batchItemBinaryRepresentation.encodeV1();
                     batch.add(batchItemBinaryRepresentation);
@@ -197,6 +250,15 @@ public final class GLSubmitMessageHandler extends HTTPHandler {
             final var model = new InquiryTransaction(
                     body.getInteger("ledger", 0),
                     body.getString("id", ""));
+
+            if (context().signatureVerifier() != null) {
+                var content = format("%s,%s", model.getLedger(), model.getId());
+                var signature = body.getString("signature", "");
+                if (!context().signatureVerifier().verify(content, signature)) {
+                    SIGNATURE_VERIFICATION_FAILED.send(routingContext);
+                    return;
+                }
+            }
 
             try (final var arena = ofConfined()) {
                 final var message = new InquiryTransactionBinaryRepresentation(arena, model);

@@ -55,7 +55,7 @@ public final class AppContext implements Closeable {
         addShutdownHook();
 
         this.configuration = new Configuration();
-        this.signatureVerifier = new SignatureVerifier(this.configuration);
+        this.signatureVerifier = signatureVerifier(this.configuration);
         this.glConnectionPool = glConnectionPool(this.configuration);
         this.omsConnectionPool = omsConnectionPool(this.configuration);
         this.executors = new Executors(this.configuration);
@@ -136,6 +136,15 @@ public final class AppContext implements Closeable {
         return httpServer;
     }
 
+    private static SignatureVerifier signatureVerifier(final Configuration configuration) {
+        if (configuration.loadBoolean("signature.verification_enabled")) {
+            return new SignatureVerifier(configuration);
+        }
+
+        logger.warn("\uD83D\uDEA8 signature.verification_enabled option has not been set");
+        return null;
+    }
+
     private static ConnectionPool glConnectionPool(final Configuration configuration) {
         if (configuration.loadBoolean("gl.connect")) {
             return new ConnectionPool(
@@ -146,7 +155,7 @@ public final class AppContext implements Closeable {
                     configuration.loadInt("gl.connections_count"));
         }
 
-        logger.warn("Connect option to GL is not set!");
+        logger.warn("⚠\uFE0F gl.connect option has not been set");
         return null;
     }
 
@@ -160,7 +169,7 @@ public final class AppContext implements Closeable {
                     configuration.loadInt("oms.connections_count"));
         }
 
-        logger.warn("Connect option to OMS is not set!");
+        logger.warn("⚠\uFE0F oms.connect option has not been set");
         return null;
     }
 

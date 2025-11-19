@@ -30,6 +30,7 @@ import io.vertx.ext.web.RoutingContext;
 public enum Error {
     // Validation
     ID_NOT_VALID("id.not_valid", "", HttpResponseStatus.BAD_REQUEST.code()),
+    SIGNATURE_VERIFICATION_FAILED("signature_verification.failed", "", HttpResponseStatus.BAD_REQUEST.code()),
 
     // GL
     GL_CONNECT_TIMEOUT("gl.connect_timeout", "GL server connect timeout", HttpResponseStatus.SERVICE_UNAVAILABLE.code()),
