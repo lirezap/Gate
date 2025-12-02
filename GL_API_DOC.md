@@ -356,28 +356,29 @@ Inquiries a transaction previously submitted.
 
 ## Errors List
 
-| Code                            | Message                                                     |
-|---------------------------------|-------------------------------------------------------------|
-| `id.not_valid`                  |                                                             |
-| `signature_verification.failed` |                                                             |
-| `gl.connect_timeout`            | GL server connect timeout                                   |
-| `gl.request_timeout`            | GL server request timeout                                   |
-| `gl.not_reachable`              | GL server not reachable                                     |
-| `handler.not_found`             |                                                             |
-| `request_body.not_valid`        |                                                             |
-| `parameter.not_valid`           |                                                             |
-| `resource.not_found`            |                                                             |
-| `too_many_requests`             |                                                             |
-| `forbidden`                     |                                                             |
-| `server.error`                  | internal server error                                       |
-| `message_format.not_valid`      | message's format is not valid                               |
-| `message_length.too_big`        | message's length is too big to handle                       |
-| `message_version.not_supported` | message's version not supported                             |
-| `message_size.not_valid`        | message's size is not valid                                 |
-| `message.not_supported`         | message is not supported                                    |
-| `account.not_found`             | account not found in provided ledger identifier             |
-| `wallet.not_found`              | wallet not found in provided ledger and account identifiers |
-| `transaction.not_found`         | transaction not found                                       |
-| `batch.is_empty`                | at least one transaction is required to process batch       |
-| `ledger.not_valid`              |                                                             |
-| `id.ts_part_not_valid`          |                                                             |
+| Code                            | Message                                                                     |
+|---------------------------------|-----------------------------------------------------------------------------|
+| `id.not_valid`                  |                                                                             |
+| `signature_verification.failed` |                                                                             |
+| `gl.connect_timeout`            | GL server connect timeout                                                   |
+| `gl.request_timeout`            | GL server request timeout                                                   |
+| `gl.not_reachable`              | GL server not reachable                                                     |
+| `handler.not_found`             |                                                                             |
+| `request_body.not_valid`        |                                                                             |
+| `parameter.not_valid`           |                                                                             |
+| `resource.not_found`            |                                                                             |
+| `too_many_requests`             |                                                                             |
+| `forbidden`                     |                                                                             |
+| `server.error`                  | internal server error                                                       |
+| `message_format.not_valid`      | message's format is not valid                                               |
+| `message_length.too_big`        | message's length is too big to handle                                       |
+| `message_version.not_supported` | message's version not supported                                             |
+| `message_size.not_valid`        | message's size is not valid                                                 |
+| `message.not_supported`         | message is not supported                                                    |
+| `account.not_found`             | account not found in provided ledger identifier                             |
+| `wallet.not_found`              | wallet not found in provided ledger and account identifiers                 |
+| `transaction.not_found`         | transaction not found                                                       |
+| `batch.is_empty`                | at least one transaction is required to process batch                       |
+| `transaction.not_synced`        | it seems transaction not yet synced, to inquiry please try in a few minutes |
+| `ledger.not_valid`              |                                                                             |
+| `id.ts_part_not_valid`          |                                                                             |
