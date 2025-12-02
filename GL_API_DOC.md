@@ -73,11 +73,11 @@ Fetches an account and all of its balances in different wallets.
 
 **Body Parameters**
 
-| Field       | Type    | Required | Description                                                                            |
-|-------------|---------|----------|----------------------------------------------------------------------------------------|
-| `ledger`    | integer | Yes      | Ledger id: must be greater than 0                                                      |
-| `account`   | long    | Yes      | Account id: must be greater than 0                                                     |
-| `signature` | string  | Yes      | Digital signature: digital signature of ledger,account string (exp, 1,2) (See Note #1) |
+| Field       | Type    | Required | Description                                                              |
+|-------------|---------|----------|--------------------------------------------------------------------------|
+| `ledger`    | integer | Yes      | Ledger id: must be greater than 0                                        |
+| `account`   | long    | Yes      | Account id: must be greater than 0                                       |
+| `signature` | string  | Yes      | Digital signature: digital signature of ledger,account string (exp, 1,2) |
 
 #### Successful Response
 
@@ -167,7 +167,7 @@ may be succeeded.
 | `sourceWallet`       | integer | Yes      | Source wallet id: must not be 0                                                                                                                                     |
 | `destinationAccount` | long    | Yes      | Destination account id: must be greater than 0                                                                                                                      |
 | `destinationWallet`  | integer | Yes      | Destination wallet id: must not be 0                                                                                                                                |
-| `id`                 | string  | Yes      | Transaction id: must be in "timestamp:string" format (See Note #2)                                                                                                  |
+| `id`                 | string  | Yes      | Transaction id: must be in "timestamp:string" format                                                                                                                |
 | `currency`           | string  | Yes      | Currency (exp, IRR)                                                                                                                                                 |
 | `amount`             | long    | Yes      | The amount of transfer                                                                                                                                              |
 | `maxOverdraftAmount` | long    | No       | The maximum amount of negative balance that the source wallet can have after this transfer                                                                          |
