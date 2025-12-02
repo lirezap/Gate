@@ -14,7 +14,7 @@
 
     <groupId>software.openex</groupId>
     <artifactId>gate</artifactId>
-    <version>0.0.24</version>
+    <version>0.0.25</version>
     <name>gate</name>
     <description>Gate to Access GL/OMS</description>
 
