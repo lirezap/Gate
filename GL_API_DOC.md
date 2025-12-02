@@ -330,7 +330,7 @@ Inquiries a transaction previously submitted.
 |-------------|---------|----------|--------------------------------------------------------------------------------------|
 | `ledger`    | integer | Yes      | Ledger id: must be greater than 0                                                    |
 | `id`        | string  | Yes      | Transaction id: must be in "timestamp:string" format                                 |
-| `signature` | string  | Yes      | Digital signature: digital signature of ledger,id string (exp, 1,1764579312847:tid1) |
+| `signature` | string  | Yes      | Digital signature: digital signature of ledger,id string (exp, 1,1764579312847:TID1) |
 
 #### Successful Response
 
@@ -341,11 +341,11 @@ Inquiries a transaction previously submitted.
   "sourceWallet": 1,
   "destinationAccount": 2,
   "destinationWallet": 1,
-  "id": "1764671159484:TID2",
+  "id": "1764671159484:TID1",
   "currency": "IRR",
   "amount": 1000,
   "maxOverdraftAmount": 4000,
-  "metadata": "{\"description\":\"TID2\"}",
+  "metadata": "{\"description\":\"TID1\"}",
   "sourceWalletNewBalance": -4000,
   "destinationWalletNewBalance": 4000,
   "ts": 1764671163646
